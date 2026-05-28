@@ -111,8 +111,22 @@ static bool load_archiveint(archiveint_api *api) {
 int main(int argc, char **argv) {
     const char *prog = basename_from_path(argv[0]);
     const codec_map *codec = find_codec(prog);
+    int arg_start = 1;
+
+    if (!codec && argc > 1) {
+        codec = find_codec(argv[1]);
+        if (codec) {
+            arg_start = 2;
+        }
+    }
+
     if (!codec) {
-        fprintf(stderr, "Unknown command name '%s'. Use one of: gzip, bzip2, xz, lzma, lz4\n", prog);
+        fprintf(stderr,
+                "Unknown command '%s'. Use one of: gzip, bzip2, xz, lzma, lz4\n"
+                "You can invoke this program via command aliases (gzip.exe, etc.)\n"
+                "or by using an explicit subcommand:\n"
+                "  %s <codec> [options] <input-file>\n",
+                (argc > 1 ? argv[1] : prog), prog);
         return 2;
     }
 
@@ -130,6 +144,7 @@ int main(int argc, char **argv) {
     };
 
     int ch;
+    optind = arg_start;
     while ((ch = getopt_long(argc, argv, "dko:ch123456789", long_opts, NULL)) != -1) {
         switch (ch) {
             case 'd': decompress = true; break;

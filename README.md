@@ -1,38 +1,45 @@
 # archiveint-util
 
-Windows向けに `gzip` / `bzip2` / `xz` / `lzma` / `lz4` 互換のコマンド名で動作する薄いラッパーです。実処理は `archiveint.dll` の公開関数を呼び出します。
+A lightweight Windows wrapper that provides `gzip` / `bzip2` / `xz` / `lzma` / `lz4` compatible command behavior.
+Actual compression and decompression are delegated to exported functions in `archiveint.dll`.
 
-## 前提
+## Requirements
 
-- MSYS2 UCRT64 環境
-- `archiveint.dll` が実行時に見つかること
-- DLLが次の公開関数を持つこと
+- MSYS2 UCRT64 environment
+- `archiveint.dll` must be discoverable at runtime
+- The DLL must export these functions:
   - `int archiveint_compress_file(const char *codec, const char *input, const char *output, int level)`
   - `int archiveint_decompress_file(const char *codec, const char *input, const char *output)`
 
-## ビルド
+## Build
 
 ```bash
 make
 make install-links
 ```
 
-`make install-links` により `gzip.exe` など5種類のコマンド名を同一実行ファイルから作成します。
+`make install-links` creates five command aliases (`gzip.exe`, etc.) from the same executable.
 
-## 使い方
+## Usage
 
 ```bash
+# Subcommand form
+ai-codec.exe gzip file.txt
+ai-codec.exe bzip2 -9 file.txt
+ai-codec.exe xz -d file.txt.xz
+
+# Alias form
 gzip file.txt
 bzip2 -9 file.txt
 xz -d file.txt.xz
 lz4 -o out.lz4 in.bin
 ```
 
-主なオプション:
+Main options:
 
 - `-d`, `--decompress`
 - `-o`, `--output FILE`
-- `-1`〜`-9`
+- `-1` to `-9`
 - `-h`, `--help`
 
-互換目的で `-k/--keep` は受理します（本実装では入力削除動作は行いません）。
+For compatibility, `-k/--keep` is accepted, but this implementation does not remove the input file.
