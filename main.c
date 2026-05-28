@@ -12,105 +12,96 @@
 struct archive;
 struct archive_entry;
 
-typedef struct archive* (__cdecl *fn_archive_write_new)(void);
-typedef int (__cdecl *fn_archive_write_free)(struct archive*);
-typedef int (__cdecl *fn_archive_write_open_filename)(struct archive*, const char*);
-typedef int (__cdecl *fn_archive_write_close)(struct archive*);
-typedef int (__cdecl *fn_archive_write_header)(struct archive*, struct archive_entry*);
-typedef long long (__cdecl *fn_archive_write_data)(struct archive*, const void*, size_t);
-typedef int (__cdecl *fn_archive_write_add_filter_gzip)(struct archive*);
-typedef int (__cdecl *fn_archive_write_add_filter_bzip2)(struct archive*);
-typedef int (__cdecl *fn_archive_write_add_filter_xz)(struct archive*);
-typedef int (__cdecl *fn_archive_write_add_filter_lzma)(struct archive*);
-typedef int (__cdecl *fn_archive_write_add_filter_lz4)(struct archive*);
-typedef int (__cdecl *fn_archive_write_set_format_raw)(struct archive*);
-typedef int (__cdecl *fn_archive_write_set_filter_option)(struct archive*, const char*, const char*, const char*);
+extern struct archive* __cdecl archive_write_new(void);
+extern int __cdecl archive_write_free(struct archive*);
+extern int __cdecl archive_write_open_filename(struct archive*, const char*);
+extern int __cdecl archive_write_close(struct archive*);
+extern int __cdecl archive_write_header(struct archive*, struct archive_entry*);
+extern long long __cdecl archive_write_data(struct archive*, const void*, size_t);
+extern int __cdecl archive_write_add_filter_gzip(struct archive*);
+extern int __cdecl archive_write_add_filter_bzip2(struct archive*);
+extern int __cdecl archive_write_add_filter_xz(struct archive*);
+extern int __cdecl archive_write_add_filter_lzma(struct archive*);
+extern int __cdecl archive_write_add_filter_lz4(struct archive*);
+extern int __cdecl archive_write_set_format_raw(struct archive*);
+extern int __cdecl archive_write_set_filter_option(struct archive*, const char*, const char*, const char*);
 
-typedef struct archive_entry* (__cdecl *fn_archive_entry_new)(void);
-typedef void (__cdecl *fn_archive_entry_free)(struct archive_entry*);
-typedef void (__cdecl *fn_archive_entry_set_pathname)(struct archive_entry*, const char*);
-typedef void (__cdecl *fn_archive_entry_set_filetype)(struct archive_entry*, unsigned int);
-typedef void (__cdecl *fn_archive_entry_set_perm)(struct archive_entry*, unsigned int);
-typedef void (__cdecl *fn_archive_entry_set_size)(struct archive_entry*, long long);
+extern struct archive_entry* __cdecl archive_entry_new(void);
+extern void __cdecl archive_entry_free(struct archive_entry*);
+extern void __cdecl archive_entry_set_pathname(struct archive_entry*, const char*);
+extern void __cdecl archive_entry_set_filetype(struct archive_entry*, unsigned int);
+extern void __cdecl archive_entry_set_perm(struct archive_entry*, unsigned int);
+extern void __cdecl archive_entry_set_size(struct archive_entry*, long long);
 
-typedef struct archive* (__cdecl *fn_archive_read_new)(void);
-typedef int (__cdecl *fn_archive_read_free)(struct archive*);
-typedef int (__cdecl *fn_archive_read_open_filename)(struct archive*, const char*, size_t);
-typedef int (__cdecl *fn_archive_read_next_header)(struct archive*, struct archive_entry**);
-typedef long long (__cdecl *fn_archive_read_data)(struct archive*, void*, size_t);
-typedef int (__cdecl *fn_archive_read_support_format_raw)(struct archive*);
-typedef int (__cdecl *fn_archive_read_support_filter_all)(struct archive*);
+extern struct archive* __cdecl archive_read_new(void);
+extern int __cdecl archive_read_free(struct archive*);
+extern int __cdecl archive_read_open_filename(struct archive*, const char*, size_t);
+extern int __cdecl archive_read_next_header(struct archive*, struct archive_entry**);
+extern long long __cdecl archive_read_data(struct archive*, void*, size_t);
+extern int __cdecl archive_read_support_format_raw(struct archive*);
+extern int __cdecl archive_read_support_filter_all(struct archive*);
 
 enum codec { C_GZIP, C_BZIP2, C_XZ, C_LZMA, C_LZ4 };
 
 struct api {
-  HMODULE dll;
-  fn_archive_write_new write_new;
-  fn_archive_write_free write_free;
-  fn_archive_write_open_filename write_open_filename;
-  fn_archive_write_close write_close;
-  fn_archive_write_header write_header;
-  fn_archive_write_data write_data;
-  fn_archive_write_add_filter_gzip add_gzip;
-  fn_archive_write_add_filter_bzip2 add_bzip2;
-  fn_archive_write_add_filter_xz add_xz;
-  fn_archive_write_add_filter_lzma add_lzma;
-  fn_archive_write_add_filter_lz4 add_lz4;
-  fn_archive_write_set_format_raw set_raw;
-  fn_archive_write_set_filter_option set_filter_option;
+  struct archive* (__cdecl *write_new)(void);
+  int (__cdecl *write_free)(struct archive*);
+  int (__cdecl *write_open_filename)(struct archive*, const char*);
+  int (__cdecl *write_close)(struct archive*);
+  int (__cdecl *write_header)(struct archive*, struct archive_entry*);
+  long long (__cdecl *write_data)(struct archive*, const void*, size_t);
+  int (__cdecl *add_gzip)(struct archive*);
+  int (__cdecl *add_bzip2)(struct archive*);
+  int (__cdecl *add_xz)(struct archive*);
+  int (__cdecl *add_lzma)(struct archive*);
+  int (__cdecl *add_lz4)(struct archive*);
+  int (__cdecl *set_raw)(struct archive*);
+  int (__cdecl *set_filter_option)(struct archive*, const char*, const char*, const char*);
 
-  fn_archive_entry_new entry_new;
-  fn_archive_entry_free entry_free;
-  fn_archive_entry_set_pathname entry_set_pathname;
-  fn_archive_entry_set_filetype entry_set_filetype;
-  fn_archive_entry_set_perm entry_set_perm;
-  fn_archive_entry_set_size entry_set_size;
+  struct archive_entry* (__cdecl *entry_new)(void);
+  void (__cdecl *entry_free)(struct archive_entry*);
+  void (__cdecl *entry_set_pathname)(struct archive_entry*, const char*);
+  void (__cdecl *entry_set_filetype)(struct archive_entry*, unsigned int);
+  void (__cdecl *entry_set_perm)(struct archive_entry*, unsigned int);
+  void (__cdecl *entry_set_size)(struct archive_entry*, long long);
 
-  fn_archive_read_new read_new;
-  fn_archive_read_free read_free;
-  fn_archive_read_open_filename read_open_filename;
-  fn_archive_read_next_header read_next_header;
-  fn_archive_read_data read_data;
-  fn_archive_read_support_format_raw support_format_raw;
-  fn_archive_read_support_filter_all support_filter_all;
+  struct archive* (__cdecl *read_new)(void);
+  int (__cdecl *read_free)(struct archive*);
+  int (__cdecl *read_open_filename)(struct archive*, const char*, size_t);
+  int (__cdecl *read_next_header)(struct archive*, struct archive_entry**);
+  long long (__cdecl *read_data)(struct archive*, void*, size_t);
+  int (__cdecl *support_format_raw)(struct archive*);
+  int (__cdecl *support_filter_all)(struct archive*);
 };
 
-static FARPROC sym(HMODULE h, const char* n){ FARPROC p=GetProcAddress(h,n); if(p) return p; return NULL; }
-#define LOAD(API, NAME) do{ api.NAME=(void*)sym(api.dll,#NAME); if(!api.NAME){fprintf(stderr,"missing symbol %s\n",#NAME); return 1;}}while(0)
-
-static int load_api(struct api* a){
+static void init_api(struct api* a){
   memset(a,0,sizeof(*a));
-  a->dll = LoadLibraryA("archiveint.dll");
-  if(!a->dll){ fprintf(stderr,"could not load archiveint.dll\n"); return 1; }
-#define L(name, field) do { a->field=(void*)sym(a->dll,name); if(!a->field){fprintf(stderr,"missing symbol %s\n",name); return 1;} } while(0)
-  L("archive_write_new", write_new);
-  L("archive_write_free", write_free);
-  L("archive_write_open_filename", write_open_filename);
-  L("archive_write_close", write_close);
-  L("archive_write_header", write_header);
-  L("archive_write_data", write_data);
-  L("archive_write_add_filter_gzip", add_gzip);
-  L("archive_write_add_filter_bzip2", add_bzip2);
-  L("archive_write_add_filter_xz", add_xz);
-  L("archive_write_add_filter_lzma", add_lzma);
-  L("archive_write_add_filter_lz4", add_lz4);
-  L("archive_write_set_format_raw", set_raw);
-  L("archive_write_set_filter_option", set_filter_option);
-  L("archive_entry_new", entry_new);
-  L("archive_entry_free", entry_free);
-  L("archive_entry_set_pathname", entry_set_pathname);
-  L("archive_entry_set_filetype", entry_set_filetype);
-  L("archive_entry_set_perm", entry_set_perm);
-  L("archive_entry_set_size", entry_set_size);
-  L("archive_read_new", read_new);
-  L("archive_read_free", read_free);
-  L("archive_read_open_filename", read_open_filename);
-  L("archive_read_next_header", read_next_header);
-  L("archive_read_data", read_data);
-  L("archive_read_support_format_raw", support_format_raw);
-  L("archive_read_support_filter_all", support_filter_all);
-#undef L
-  return 0;
+  a->write_new = archive_write_new;
+  a->write_free = archive_write_free;
+  a->write_open_filename = archive_write_open_filename;
+  a->write_close = archive_write_close;
+  a->write_header = archive_write_header;
+  a->write_data = archive_write_data;
+  a->add_gzip = archive_write_add_filter_gzip;
+  a->add_bzip2 = archive_write_add_filter_bzip2;
+  a->add_xz = archive_write_add_filter_xz;
+  a->add_lzma = archive_write_add_filter_lzma;
+  a->add_lz4 = archive_write_add_filter_lz4;
+  a->set_raw = archive_write_set_format_raw;
+  a->set_filter_option = archive_write_set_filter_option;
+  a->entry_new = archive_entry_new;
+  a->entry_free = archive_entry_free;
+  a->entry_set_pathname = archive_entry_set_pathname;
+  a->entry_set_filetype = archive_entry_set_filetype;
+  a->entry_set_perm = archive_entry_set_perm;
+  a->entry_set_size = archive_entry_set_size;
+  a->read_new = archive_read_new;
+  a->read_free = archive_read_free;
+  a->read_open_filename = archive_read_open_filename;
+  a->read_next_header = archive_read_next_header;
+  a->read_data = archive_read_data;
+  a->support_format_raw = archive_read_support_format_raw;
+  a->support_filter_all = archive_read_support_filter_all;
 }
 
 static int set_filter(struct api* a, struct archive* w, enum codec c){
@@ -245,8 +236,7 @@ int main(int argc, char** argv){
   }
 
   struct api api;
-  if(load_api(&api)!=0) return 1;
+  init_api(&api);
   int rc = d ? decompress_file(&api,in,out) : compress_file(&api,c,in,out,level);
-  if(api.dll) FreeLibrary(api.dll);
   return rc;
 }
