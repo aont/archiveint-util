@@ -19,7 +19,12 @@ extern int __cdecl archive_write_add_filter_gzip(struct archive*);
 extern int __cdecl archive_write_add_filter_bzip2(struct archive*);
 extern int __cdecl archive_write_add_filter_xz(struct archive*);
 extern int __cdecl archive_write_add_filter_lzma(struct archive*);
+extern int __cdecl archive_write_add_filter_lzip(struct archive*);
+extern int __cdecl archive_write_add_filter_compress(struct archive*);
 extern int __cdecl archive_write_add_filter_lz4(struct archive*);
+extern int __cdecl archive_write_add_filter_lzop(struct archive*);
+extern int __cdecl archive_write_add_filter_lrzip(struct archive*);
+extern int __cdecl archive_write_add_filter_grzip(struct archive*);
 extern int __cdecl archive_write_set_format_raw(struct archive*);
 extern int __cdecl archive_write_set_filter_option(struct archive*, const char*, const char*, const char*);
 
@@ -38,7 +43,7 @@ extern long long __cdecl archive_read_data(struct archive*, void*, size_t);
 extern int __cdecl archive_read_support_format_raw(struct archive*);
 extern int __cdecl archive_read_support_filter_all(struct archive*);
 
-enum codec { C_GZIP, C_BZIP2, C_XZ, C_LZMA, C_LZ4 };
+enum codec { C_GZIP, C_BZIP2, C_XZ, C_LZMA, C_LZIP, C_COMPRESS, C_LZ4, C_LZOP, C_LRZIP, C_GRZIP };
 
 
 #endif

@@ -8,7 +8,12 @@
 - `bzip2`
 - `xz`
 - `lzma`
+- `lzip`
+- `compress`
 - `lz4`
+- `lzop`
+- `lrzip`
+- `grzip`
 
 ## Build
 
@@ -21,7 +26,7 @@ This produces `archiveint-util.exe`.
 ## Usage
 
 ```text
-archiveint-util <gzip|bzip2|xz|lzma|lz4> [OPTION]... [FILE]
+archiveint-util <gzip|bzip2|xz|lzma|lzip|compress|lz4|lzop|lrzip|grzip> [OPTION]... [FILE]
 ```
 
 Common options:
@@ -33,7 +38,7 @@ Common options:
 - `-i, --input FILE` – input file
 - `-o, --output FILE` – output file
 
-By default, output names are derived from codec extension (`.gz`, `.bz2`, `.xz`, `.lzma`, `.lz4`).
+By default, output names are derived from codec extension (`.gz`, `.bz2`, `.xz`, `.lzma`, `.lz`, `.Z`, `.lz4`, `.lzo`, `.lrz`, `.grz`).
 
 ## Notes
 

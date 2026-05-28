@@ -14,7 +14,12 @@ static int set_filter(struct archive* w, enum codec c){
     case C_BZIP2: return archive_write_add_filter_bzip2(w);
     case C_XZ: return archive_write_add_filter_xz(w);
     case C_LZMA: return archive_write_add_filter_lzma(w);
+    case C_LZIP: return archive_write_add_filter_lzip(w);
+    case C_COMPRESS: return archive_write_add_filter_compress(w);
     case C_LZ4: return archive_write_add_filter_lz4(w);
+    case C_LZOP: return archive_write_add_filter_lzop(w);
+    case C_LRZIP: return archive_write_add_filter_lrzip(w);
+    case C_GRZIP: return archive_write_add_filter_grzip(w);
   }
   return -1;
 }
@@ -25,7 +30,12 @@ static const char* codec_name(enum codec c){
     case C_BZIP2: return "bzip2";
     case C_XZ: return "xz";
     case C_LZMA: return "lzma";
+    case C_LZIP: return "lzip";
+    case C_COMPRESS: return "compress";
     case C_LZ4: return "lz4";
+    case C_LZOP: return "lzop";
+    case C_LRZIP: return "lrzip";
+    case C_GRZIP: return "grzip";
   }
   return "";
 }
@@ -41,7 +51,9 @@ static int compress_file(enum codec c, const char* in, const char* out, int leve
     snprintf(lv,sizeof(lv),"%d",level);
     if(archive_write_set_filter_option(w,codec_name(c),"compression-level",lv)!=ARCHIVE_OK){
       fprintf(stderr,"failed to set compression level %d for %s\n",level,codec_name(c));
-      if(fi!=stdin) fclose(fi); archive_write_free(w); return 1;
+      if(fi!=stdin) fclose(fi);
+      archive_write_free(w);
+      return 1;
     }
   }
   if(archive_write_set_format_raw(w)!=ARCHIVE_OK || archive_write_open_filename(w,out)!=ARCHIVE_OK){if(fi!=stdin) fclose(fi); archive_write_free(w); return 1;}
@@ -69,7 +81,7 @@ static int decompress_file(const char* in, const char* out){
 
 static void usage(void){
   fprintf(stderr,
-    "usage: archiveint-util <gzip|bzip2|xz|lzma|lz4> [OPTION]... [FILE]\n"
+    "usage: archiveint-util <gzip|bzip2|xz|lzma|lzip|compress|lz4|lzop|lrzip|grzip> [OPTION]... [FILE]\n"
     "  -d, --decompress        decompress\n"
     "  -c, --stdout            write to standard output\n"
     "  -k, --keep              keep input files (default behavior)\n"
@@ -87,7 +99,12 @@ static const char* codec_ext(enum codec c){
     case C_BZIP2: return ".bz2";
     case C_XZ: return ".xz";
     case C_LZMA: return ".lzma";
+    case C_LZIP: return ".lz";
+    case C_COMPRESS: return ".Z";
     case C_LZ4: return ".lz4";
+    case C_LZOP: return ".lzo";
+    case C_LRZIP: return ".lrz";
+    case C_GRZIP: return ".grz";
   }
   return "";
 }
@@ -99,7 +116,12 @@ int main(int argc, char** argv){
   else if(strcmp(argv[1],"bzip2")==0) c=C_BZIP2;
   else if(strcmp(argv[1],"xz")==0) c=C_XZ;
   else if(strcmp(argv[1],"lzma")==0) c=C_LZMA;
+  else if(strcmp(argv[1],"lzip")==0) c=C_LZIP;
+  else if(strcmp(argv[1],"compress")==0) c=C_COMPRESS;
   else if(strcmp(argv[1],"lz4")==0) c=C_LZ4;
+  else if(strcmp(argv[1],"lzop")==0) c=C_LZOP;
+  else if(strcmp(argv[1],"lrzip")==0) c=C_LRZIP;
+  else if(strcmp(argv[1],"grzip")==0) c=C_GRZIP;
   else { usage(); return 1; }
 
   int d=0,opt,stdout_mode=0,force=0,level=-1; char* in=NULL; char* out=NULL;
