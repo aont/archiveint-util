@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS ?= -O2 -Wall -Wextra -std=c11
 LDFLAGS ?=
-LDLIBS ?= /c/Windows/System32/archiveint.dll
+LDLIBS ?= c:/Windows/System32/archiveint.dll
 
 all: archiveint-util.exe
 
