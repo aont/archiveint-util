@@ -8,43 +8,13 @@
 #define BUF_SIZE 65536
 #include "archiveint_dll.h"
 
-static void init_api(struct api* a){
-  memset(a,0,sizeof(*a));
-  a->write_new = archive_write_new;
-  a->write_free = archive_write_free;
-  a->write_open_filename = archive_write_open_filename;
-  a->write_close = archive_write_close;
-  a->write_header = archive_write_header;
-  a->write_data = archive_write_data;
-  a->add_gzip = archive_write_add_filter_gzip;
-  a->add_bzip2 = archive_write_add_filter_bzip2;
-  a->add_xz = archive_write_add_filter_xz;
-  a->add_lzma = archive_write_add_filter_lzma;
-  a->add_lz4 = archive_write_add_filter_lz4;
-  a->set_raw = archive_write_set_format_raw;
-  a->set_filter_option = archive_write_set_filter_option;
-  a->entry_new = archive_entry_new;
-  a->entry_free = archive_entry_free;
-  a->entry_set_pathname = archive_entry_set_pathname;
-  a->entry_set_filetype = archive_entry_set_filetype;
-  a->entry_set_perm = archive_entry_set_perm;
-  a->entry_set_size = archive_entry_set_size;
-  a->read_new = archive_read_new;
-  a->read_free = archive_read_free;
-  a->read_open_filename = archive_read_open_filename;
-  a->read_next_header = archive_read_next_header;
-  a->read_data = archive_read_data;
-  a->support_format_raw = archive_read_support_format_raw;
-  a->support_filter_all = archive_read_support_filter_all;
-}
-
-static int set_filter(struct api* a, struct archive* w, enum codec c){
+static int set_filter(struct archive* w, enum codec c){
   switch(c){
-    case C_GZIP: return a->add_gzip(w);
-    case C_BZIP2: return a->add_bzip2(w);
-    case C_XZ: return a->add_xz(w);
-    case C_LZMA: return a->add_lzma(w);
-    case C_LZ4: return a->add_lz4(w);
+    case C_GZIP: return archive_write_add_filter_gzip(w);
+    case C_BZIP2: return archive_write_add_filter_bzip2(w);
+    case C_XZ: return archive_write_add_filter_xz(w);
+    case C_LZMA: return archive_write_add_filter_lzma(w);
+    case C_LZ4: return archive_write_add_filter_lz4(w);
   }
   return -1;
 }
@@ -60,41 +30,41 @@ static const char* codec_name(enum codec c){
   return "";
 }
 
-static int compress_file(struct api* a, enum codec c, const char* in, const char* out, int level){
+static int compress_file(enum codec c, const char* in, const char* out, int level){
   FILE* fi=(strcmp(in,"-")==0)?stdin:fopen(in,"rb"); if(!fi){perror("fopen input"); return 1;}
   if(fseek(fi,0,SEEK_END)!=0){perror("fseek"); if(fi!=stdin) fclose(fi); return 1;}
   long long sz=ftell(fi); rewind(fi);
-  struct archive* w=a->write_new(); if(!w){fclose(fi); return 1;}
-  if(set_filter(a,w,c)!=ARCHIVE_OK){if(fi!=stdin) fclose(fi); a->write_free(w); return 1;}
+  struct archive* w=archive_write_new(); if(!w){fclose(fi); return 1;}
+  if(set_filter(w,c)!=ARCHIVE_OK){if(fi!=stdin) fclose(fi); archive_write_free(w); return 1;}
   if(level>=0){
     char lv[4];
     snprintf(lv,sizeof(lv),"%d",level);
-    if(a->set_filter_option(w,codec_name(c),"compression-level",lv)!=ARCHIVE_OK){
+    if(archive_write_set_filter_option(w,codec_name(c),"compression-level",lv)!=ARCHIVE_OK){
       fprintf(stderr,"failed to set compression level %d for %s\n",level,codec_name(c));
-      if(fi!=stdin) fclose(fi); a->write_free(w); return 1;
+      if(fi!=stdin) fclose(fi); archive_write_free(w); return 1;
     }
   }
-  if(a->set_raw(w)!=ARCHIVE_OK || a->write_open_filename(w,out)!=ARCHIVE_OK){if(fi!=stdin) fclose(fi); a->write_free(w); return 1;}
-  struct archive_entry* e=a->entry_new();
-  a->entry_set_pathname(e,in);
-  a->entry_set_filetype(e,0100000);
-  a->entry_set_perm(e,0644);
-  a->entry_set_size(e,sz);
-  if(a->write_header(w,e)!=ARCHIVE_OK){a->entry_free(e); if(fi!=stdin) fclose(fi); a->write_close(w); a->write_free(w); return 1;}
+  if(archive_write_set_format_raw(w)!=ARCHIVE_OK || archive_write_open_filename(w,out)!=ARCHIVE_OK){if(fi!=stdin) fclose(fi); archive_write_free(w); return 1;}
+  struct archive_entry* e=archive_entry_new();
+  archive_entry_set_pathname(e,in);
+  archive_entry_set_filetype(e,0100000);
+  archive_entry_set_perm(e,0644);
+  archive_entry_set_size(e,sz);
+  if(archive_write_header(w,e)!=ARCHIVE_OK){archive_entry_free(e); if(fi!=stdin) fclose(fi); archive_write_close(w); archive_write_free(w); return 1;}
   char buf[BUF_SIZE]; size_t n;
-  while((n=fread(buf,1,sizeof(buf),fi))>0){ if(a->write_data(w,buf,n)<0){a->entry_free(e); if(fi!=stdin) fclose(fi); a->write_close(w); a->write_free(w); return 1;} }
-  a->entry_free(e); if(fi!=stdin) fclose(fi); a->write_close(w); a->write_free(w); return 0;
+  while((n=fread(buf,1,sizeof(buf),fi))>0){ if(archive_write_data(w,buf,n)<0){archive_entry_free(e); if(fi!=stdin) fclose(fi); archive_write_close(w); archive_write_free(w); return 1;} }
+  archive_entry_free(e); if(fi!=stdin) fclose(fi); archive_write_close(w); archive_write_free(w); return 0;
 }
 
-static int decompress_file(struct api* a, const char* in, const char* out){
+static int decompress_file(const char* in, const char* out){
   FILE* fo=(strcmp(out,"-")==0)?stdout:fopen(out,"wb"); if(!fo){perror("fopen output"); return 1;}
-  struct archive* r=a->read_new(); if(!r){fclose(fo); return 1;}
-  if(a->support_filter_all(r)!=ARCHIVE_OK || a->support_format_raw(r)!=ARCHIVE_OK || a->read_open_filename(r,in,BUF_SIZE)!=ARCHIVE_OK){a->read_free(r); fclose(fo); return 1;}
+  struct archive* r=archive_read_new(); if(!r){fclose(fo); return 1;}
+  if(archive_read_support_filter_all(r)!=ARCHIVE_OK || archive_read_support_format_raw(r)!=ARCHIVE_OK || archive_read_open_filename(r,in,BUF_SIZE)!=ARCHIVE_OK){archive_read_free(r); fclose(fo); return 1;}
   struct archive_entry* e=NULL;
-  if(a->read_next_header(r,&e)!=ARCHIVE_OK){a->read_free(r); if(fo!=stdout) fclose(fo); return 1;}
+  if(archive_read_next_header(r,&e)!=ARCHIVE_OK){archive_read_free(r); if(fo!=stdout) fclose(fo); return 1;}
   char buf[BUF_SIZE]; long long n;
-  while((n=a->read_data(r,buf,sizeof(buf)))>0){ if(fwrite(buf,1,(size_t)n,fo)!=(size_t)n){perror("fwrite"); a->read_free(r); if(fo!=stdout) fclose(fo); return 1;} }
-  a->read_free(r); if(fo!=stdout) fclose(fo); return 0;
+  while((n=archive_read_data(r,buf,sizeof(buf)))>0){ if(fwrite(buf,1,(size_t)n,fo)!=(size_t)n){perror("fwrite"); archive_read_free(r); if(fo!=stdout) fclose(fo); return 1;} }
+  archive_read_free(r); if(fo!=stdout) fclose(fo); return 0;
 }
 
 static void usage(void){
@@ -169,8 +139,6 @@ int main(int argc, char** argv){
     if(t){ fclose(t); fprintf(stderr,"%s exists; use -f to overwrite\n",out); return 1; }
   }
 
-  struct api api;
-  init_api(&api);
-  int rc = d ? decompress_file(&api,in,out) : compress_file(&api,c,in,out,level);
+  int rc = d ? decompress_file(in,out) : compress_file(c,in,out,level);
   return rc;
 }
