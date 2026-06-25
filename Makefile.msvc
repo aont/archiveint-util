@@ -7,11 +7,27 @@
 #   set INCLUDE=%INCLUDE%;path\to\getopt-msvc-helper\include
 #   set LIB=%LIB%;path\to\getopt-msvc-helper\lib
 #   nmake /f Makefile.msvc
+#
+# This makefile creates archiveint.def from:
+#
+#   C:\Windows\System32\archiveint.dll
+#
+# Then it creates archiveint.lib from archiveint.def using lib.exe.
+#
+# Use an x64 MSVC developer command prompt for this DLL.
 
 CC = cl
 CFLAGS = /nologo /W4 /O2 /DWIN32_LEAN_AND_MEAN
 LDFLAGS = /nologo
-LDLIBS = getopt.lib archiveint.lib
+
+ARCHIVEINT_DLL = C:\Windows\System32\archiveint.dll
+ARCHIVEINT_DEF = archiveint.def
+ARCHIVEINT_LIB = archiveint.lib
+ARCHIVEINT_EXP = archiveint.exp
+MAKE_DEF_PS1 = make-def-from-dll.ps1
+MACHINE = x64
+
+LDLIBS = getopt.lib $(ARCHIVEINT_LIB)
 
 TARGET = archiveint-util.exe
 SRCS = main.c
@@ -19,11 +35,17 @@ OBJS = $(SRCS:.c=.obj)
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) $(ARCHIVEINT_LIB)
 	link $(LDFLAGS) /OUT:$@ $(OBJS) $(LDLIBS)
+
+$(ARCHIVEINT_LIB): $(ARCHIVEINT_DEF)
+	lib /nologo /def:$(ARCHIVEINT_DEF) /machine:$(MACHINE) /out:$(ARCHIVEINT_LIB)
+
+$(ARCHIVEINT_DEF): $(ARCHIVEINT_DLL) $(MAKE_DEF_PS1)
+	powershell -NoProfile -ExecutionPolicy Bypass -File $(MAKE_DEF_PS1) -DllPath "$(ARCHIVEINT_DLL)" -OutDef "$(ARCHIVEINT_DEF)"
 
 .c.obj:
 	$(CC) $(CFLAGS) /c $<
 
 clean:
-	-del /Q $(TARGET) $(OBJS) 2>NUL
+	-del /Q $(TARGET) $(OBJS) $(ARCHIVEINT_DEF) $(ARCHIVEINT_LIB) $(ARCHIVEINT_EXP) 2>NUL
