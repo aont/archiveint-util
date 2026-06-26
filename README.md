@@ -18,10 +18,16 @@
 ## Build
 
 ```bash
-make
+make -f Makefile.mingw
 ```
 
-This produces `archiveint-util.exe`.
+Or with MSVC:
+
+```cmd
+nmake /f Makefile.msvc
+```
+
+Both makefiles build `archiveint-util.exe` without linking the C runtime by using a custom entry point and default-library suppression.
 
 ## Usage
 
